@@ -260,6 +260,39 @@ def consumer(gpu_id, queue, depth_db, normal_db, write_queue):
                 log.info(f"[GPU {gpu_id}] Done: {name}")
 
             torch.cuda.empty_cache()
+            # for rgb_np, pad_info, rgb_origin, scaled_intrinsics, name in batch:
+            #     # Pin memory here (single thread) then transfer non-blocking
+            #     # pinned = torch.from_numpy(rgb_np).pin_memory()
+            #     pinned = torch.from_numpy(rgb_np)
+            #     gpu_tensor = pinned.cuda(gpu_id, non_blocking=True)
+            #
+            #     # Normalize on GPU
+            #     gpu_tensor = torch.div((gpu_tensor - _mean), _std)
+            #     gpu_tensor = gpu_tensor[None, :, :, :]  # add batch dim
+            #
+            #     with torch.no_grad():
+            #         pred_depth, confidence, output_dict = model.inference(
+            #             {"input": gpu_tensor}
+            #         )
+            #
+            #     depth_img = get_depth_image(
+            #         pred_depth, pad_info, rgb_origin, scaled_intrinsics
+            #     )
+            #     normal_img = get_normal_image(output_dict, pad_info)
+            #
+            #     # Offload disk write — don't block GPU thread
+            #     write_queue.put(
+            #         (
+            #             f"{depth_db}/{name}.jpg",
+            #             f"{normal_db}/{name}.jpg",
+            #             depth_img,
+            #             normal_img,
+            #         ),
+            #         block=True,
+            #     )
+            #     log.info(f"[GPU {gpu_id}] Done: {name}")
+            #
+            # torch.cuda.empty_cache()
 
         except Exception as e:
             log.error(f"[GPU {gpu_id}] ERROR on {name}: {e}")
