@@ -30,14 +30,16 @@ padding = [123.675, 116.28, 103.53]
 
 BATCH_SIZE = 16
 QUEUE_SIZE = 8
-CPU_WORKERS = 4 
-WRITE_WORKERS = 2 
+CPU_WORKERS = 4
+WRITE_WORKERS = 2
 
 log = logging.getLogger()
 shutdown = SHUTDOWN
 
+
 def sigterm_handler(signum, frame):
     shutdown.set()
+
 
 signal.signal(signal.SIGTERM, sigterm_handler)
 signal.signal(signal.SIGINT, sigterm_handler)
@@ -187,7 +189,7 @@ def consumer(gpu_id, queue, depth_db, normal_db, write_queue):
     model = load_model(gpu_id)
 
     _mean = mean.cuda(gpu_id)
-    _std  = std.cuda(gpu_id)
+    _std = std.cuda(gpu_id)
 
     log.info(f"[GPU {gpu_id}] Model ready.")
 
@@ -211,8 +213,8 @@ def consumer(gpu_id, queue, depth_db, normal_db, write_queue):
                 .float()
             )
             batch_gpu = (batch_gpu - _mean) / _std
-            pred_depths   = []
-            output_dicts  = []
+            pred_depths = []
+            output_dicts = []
             with torch.no_grad():
                 for i in range(len(items)):
                     pred_depth, _, output_dict = model.inference(
@@ -223,7 +225,7 @@ def consumer(gpu_id, queue, depth_db, normal_db, write_queue):
             for i, (pad_info, rgb_origin, scaled_intrinsics, name) in enumerate(
                 zip(pad_infos, rgb_origins, scaled_intrinsics_list, names)
             ):
-                depth_img  = get_depth_image(
+                depth_img = get_depth_image(
                     pred_depths[i], pad_info, rgb_origin, scaled_intrinsics
                 )
                 normal_img = get_normal_image(
@@ -341,3 +343,4 @@ def cli_command():
 
 if __name__ == "__main__":
     cli_command()
+
